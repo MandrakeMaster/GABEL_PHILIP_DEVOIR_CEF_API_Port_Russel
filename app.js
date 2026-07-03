@@ -23,6 +23,8 @@ app.use('/api-docs', express.static('out'));
 
 app.use('/', indexRouter);
 
+app.use('/catways', require('./routes/catways'));
+
 app.use(function(req, res, next) {
     res.status(404).json({name: 'API', version: '1.0', status: '404', message: 'not_found'});
 });
