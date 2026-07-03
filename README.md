@@ -8,7 +8,7 @@ Application de gestion des réservations de catways pour le port de plaisance.
 3. `npm start`
 
 ## Documentation
-- La documentation technique est disponible via l'interface : `/api-docs`
+- La documentation technique est disponible sur la page d'acceuil/ connexion utilisateur
 - Générer la documentation manuellement : `npm run doc`
 
 ## Fonctionnalités
