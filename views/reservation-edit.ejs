@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier la Réservation</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/special.css">
+</head>
+<body>
+    <header><h1>Modifier la Réservation</h1></header>
+
+    <main class="catway-container">
+        <section class="add-section">
+            <h3>Modification</h3>
+            <!-- Note l'action qui pointe vers /reservations/update/:id -->
+            <form action="/reservations/update/<%= reservation._id %>" method="POST">
+                <input type="number" name="catwayNumber" value="<%= reservation.catwayNumber %>" required>
+                <input type="text" name="clientName" value="<%= reservation.clientName %>" required>
+                <input type="text" name="boatName" value="<%= reservation.boatName %>" required>
+                
+                <label for="startDate">Date de début :</label>
+                <input type="date" id="startDate" name="startDate" value="<%= reservation.startDate.toISOString().split('T')[0] %>" required>
+                
+                <label for="endDate">Date de fin :</label>
+                <input type="date" id="endDate" name="endDate" value="<%= reservation.endDate.toISOString().split('T')[0] %>" required>
+                
+                <button type="submit">Enregistrer</button>
+                <a href="/reservations">Annuler</a>
+            </form>
+        </section>
+    </main>
+
+    <footer><a href="/dashboard">← Retour au Dashboard</a></footer>
+</body>
+</html>

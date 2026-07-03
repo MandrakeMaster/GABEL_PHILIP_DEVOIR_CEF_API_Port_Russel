@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Port de Plaisance</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+    <header>
+        <h1>Bienvenue sur la Gestion du Port de Plaisance</h1>
+        <p>Cette application permet aux capitaines de gérer les catways et les réservations en toute simplicité.</p>
+    </header>
+
+    <main>
+        <h3>Connexion</h3>
+        <form action="/login" method="POST">
+            <div>
+                <label>Email:</label>
+                <input type="email" name="email" placeholder="Votre email" required>
+            </div>
+            <div>
+                <label>Mot de passe:</label>
+                <input type="password" name="password" placeholder="Votre mot de passe" required>
+            </div>
+            <button type="submit">Se connecter</button>
+        </form>
+    </main>
+
+    <footer>
+        <a href="/api-docs">Accéder à la documentation de l'API</a>
+    </footer>
+</body>
+</html>
