@@ -1,0 +1,11 @@
+{
+    "source": {
+        "include": ["routes", "services", "models", "app.js"],
+        "includePattern": ".js$",
+        "excludePattern": "(node_modules|public|bin|middlewares/.*private.js$)"
+    },
+    "opts": {
+        "destination": "./out",
+        "recurse": true
+    }
+}

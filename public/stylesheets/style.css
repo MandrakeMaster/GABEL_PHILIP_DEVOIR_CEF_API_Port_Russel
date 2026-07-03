@@ -1,8 +1,81 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+/* --- 1. RESET CSS --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-a {
-  color: #00B7FF;
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f4f7f6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* --- 2. LAYOUT FORMULAIRE  --- */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 350px;
+    margin: 50px auto; 
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.login-form h1 {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #004a99;
+}
+
+.login-form input, 
+.login-form button {
+    padding: 12px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.login-form button {
+    background-color: #004a99;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+}
+
+.login-form button:hover {
+    background-color: #003366;
+}
+
+/* --- 3. HEADER & FOOTER --- */
+header {
+    background: #004a99;
+    color: white;
+    padding: 1rem 2rem;
+    text-align: center;
+}
+
+footer {
+    text-align: center;
+    padding: 1.5rem;
+    background: #222;
+    color: white;
+    margin-top: auto;
+
+footer a {
+    color: #4da3ff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+footer a:hover {
+    text-decoration: underline;
 }
