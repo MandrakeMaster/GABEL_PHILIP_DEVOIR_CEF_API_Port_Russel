@@ -1,8 +1,6 @@
-const { MongoDBNamespace } = require('mongodb');
 const mongoose = require('mongoose');
 
 const clientOptions = {
-    useNewUrlParser   : true,
     dbName            : 'apinode'
 };
 

@@ -1,0 +1,11 @@
+# Dépendances (le dossier node_modules est trop lourd et inutile sur GitHub)
+node_modules/
+
+# Fichiers de configuration sensibles (très important pour ne pas fuiter vos mots de passe)
+env
+
+# Fichiers générés par le système ou l'éditeur
+.DS_Store
+*.log
+#Fichier perso todolist etc
+todo list
