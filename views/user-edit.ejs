@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier Utilisateur</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/special.css">
+</head>
+<body>
+    <header><h1>Modifier Utilisateur</h1></header>
+
+    <main class="catway-container">
+        <!-- Ajout du titre dynamique -->
+        <section class="add-section">
+            <h2>Modification de : <%= user.username %></h2>
+
+            <form action="/users/update/<%= user._id %>" method="POST">
+                <input type="text" name="name" placeholder="Votre nom" value="<%= user.name %>" required>
+                <input type="email" name="email" value="<%= user.email %>" required>
+                <input type="password" name="password" placeholder="Nouveau mot de passe (laisser vide pour garder l'ancien)">
+                
+                <button type="submit">Enregistrer</button>
+                <a href="/users">Annuler</a>
+            </form>
+        </section>
+    </main>
+
+    <footer><a href="/dashboard">← Retour au Dashboard</a></footer>
+</body>
+</html>

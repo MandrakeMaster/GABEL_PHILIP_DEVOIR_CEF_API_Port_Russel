@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Tableau de bord - Port de Russel</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/special.css">
+</head>
+<body>
+    <header>
+        <h1>Tableau de bord</h1>
+        <p><%= userName %> - <%= email %> - <%= date %></p>
+    </header>
+
+    <main>
+        <nav class="dashboard-nav">
+            <a href="/catways">Gestion Catways</a>
+            <a href="/reservations">Gestion Réservations</a>
+            <a href="/users">Gestion Utilisateurs</a>
+            <a href="/logout">Déconnexion</a>
+        </nav>
+
+        <section class="reservations-section">
+            <h2>Réservations en cours</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>N° Catway</th>
+                        <th>Client</th>
+                        <th>Nom du bateau</th>
+                        <th>Début</th>
+                        <th>Fin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% reservations.forEach(function(res) { %>
+                        <tr>
+                            <td><%= res.catwayNumber %></td>
+                            <td><%= res.clientName %></td>
+                            <td><%= res.boatName %></td>
+                            <td><%= new Date(res.startDate).toLocaleDateString('fr-FR') %></td>
+                            <td><%= new Date(res.endDate).toLocaleDateString('fr-FR') %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 - Port de Russel</p>
+    </footer>
+</body>
+</html>

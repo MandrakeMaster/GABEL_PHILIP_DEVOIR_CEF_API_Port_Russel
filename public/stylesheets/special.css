@@ -1,0 +1,39 @@
+/* --- Contenu principal --- */
+.catway-container {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 0 20px;
+    width: 100%;
+}
+
+.add-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.add-section form {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin-bottom: 30px;
+}
+
+th, td {
+    padding: 12px;
+    border: 1px solid #dee2e6;
+    text-align: left;
+}
+
+thead {
+    background-color: #00274d;
+    color: white;
+}

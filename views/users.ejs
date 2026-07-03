@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion des Utilisateurs</title>
+    <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="/stylesheets/special.css">
+</head>
+<body>
+    <header><h1>Gestion des Utilisateurs</h1></header>
+    <main class="catway-container">
+        <section class="add-section">
+            <h3>Ajouter un utilisateur</h3>
+            <form action="/users/add" method="POST">
+                <input type="text" name="name" placeholder="Nom" required>
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Mot de passe" required>
+                <button type="submit">Créer</button>
+            </form>
+        </section>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% users.forEach(function(u) { %>
+                    <tr>
+                        <td><%= u.username %></td>
+                        <td><%= u.email %></td>
+                        <td>
+                            <a href="/users/edit/<%= u._id %>">Modifier</a>
+                            <a href="/users/delete/<%= u._id %>" onclick="return confirm('Confirmer ?')">Supprimer</a>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </main>
+    <footer><a href="/dashboard">← Retour au Dashboard</a></footer>
+</body>
+</html>
