@@ -1,101 +1,93 @@
+/**
+ * @file services/reservations.js
+ * @description Gestion des réservations incluant la vérification des conflits et la disponibilité des catways.
+ */
 const Reservation = require('../models/reservation');
 const Catway = require('../models/catway');
 
-
-// Lister toutes les réservations d'un catway spécifique
-exports.getAllByCatway = async (req, res) => {
-    const reservations = await Reservation.find({ catwayNumber: req.params.id });
-    res.status(200).json(reservations);
+/**
+ * @function isAvailable
+ * @description Vérifie si un catway est disponible (non en réparation ou indisponible).
+ */
+const isAvailable = async (catwayNumber) => {
+    const catway = await Catway.findOne({ catwayNumber: catwayNumber });
+    if (!catway) return false;
+    const state = (catway.catwayState || "").toLowerCase();
+    return !state.includes('réparation') && !state.includes('indisponible');
 };
 
-// Récupérer une réservation spécifique (via son _id MongoDB)
-exports.getById = async (req, res) => {
-    const reservation = await Reservation.findOne({ 
-        _id: req.params.idReservation, 
-        catwayNumber: req.params.id 
-    });
-    reservation ? res.status(200).json(reservation) : res.status(404).json({ message: "Introuvable" });
-};
-
+/** @function add - Crée une réservation après vérifications métier[cite: 6]. */
 exports.add = async (req, res) => {
-    // 1. Vérifier si le catway existe
-    const catway = await Catway.findOne({ catwayNumber: req.params.id });
-    
-    if (!catway) {
-        return res.status(404).json({ message: "Le catway demandé n'existe pas." });
+    try {
+        const catwayNumber = Number(req.body.catwayNumber);
+        
+        // 1. Vérification de l'état du catway
+        if (!(await isAvailable(catwayNumber))) {
+            return res.redirect('/reservations?error=catway_unavailable');
+        }
+
+        // 2. Vérification des dates
+        const newStart = new Date(req.body.startDate).getTime();
+        const newEnd = new Date(req.body.endDate).getTime();
+        if (newStart >= newEnd) return res.redirect('/reservations?error=invalid_dates');
+
+        const reservations = await Reservation.find({ catwayNumber: catwayNumber });
+        const conflict = reservations.find(r => {
+            const start = new Date(r.startDate).getTime();
+            const end = new Date(r.endDate).getTime();
+            return (start < newEnd && end > newStart);
+        });
+
+        if (conflict) return res.redirect('/reservations?error=conflict');
+
+        // 3. Sauvegarde de la réservation
+        await new Reservation({ 
+            catwayNumber,
+            clientName: req.body.clientName,
+            boatName: req.body.boatName,
+            startDate: req.body.startDate,
+            endDate: req.body.endDate
+        }).save();
+        
+        res.redirect('/reservations');
+    } catch (error) {
+        console.error("Erreur serveur :", error);
+        res.status(500).send("Erreur lors de la réservation.");
     }
-
-    // --- AJOUT DE LA VÉRIFICATION D'ÉTAT ---
-    // On vérifie si l'état contient "réparation" (insensible à la casse)
-    const state = catway.catwayState.toLowerCase();
-    if (state.includes('réparation') || state.includes('indisponible')) {
-        return res.status(400).json({ message: "Erreur : Ce catway est en réparation ou indisponible." });
-    }
-    // ---------------------------------------
-
-    // Préparation des dates pour la vérification
-    const newStart = new Date(req.body.startDate);
-    const newEnd = new Date(req.body.endDate);
-
-    // 2. Vérifier les chevauchements
-    const overlapping = await Reservation.find({
-        catwayNumber: req.params.id, 
-        startDate: { $lt: newEnd },
-        endDate: { $gt: newStart }
-    });
-
-    if (overlapping.length > 0) {
-        return res.status(400).json({ message: "Erreur : Ce catway est déjà réservé sur ces dates." });
-    }
-
-    // 3. Si tout est bon, on crée la réservation
-    const reservation = new Reservation({ ...req.body, catwayNumber: req.params.id });
-    await reservation.save();
-    res.status(201).json(reservation);
 };
 
+/** @function update - Met à jour une réservation existante[cite: 6]. */
 exports.update = async (req, res) => {
-    // 1. Vérifier si le catway est disponible (en cas de changement ou maintien)
-    const catway = await Catway.findOne({ catwayNumber: req.params.id });
-    
-    if (!catway) {
-        return res.status(404).json({ message: "Le catway demandé n'existe pas." });
+    try {
+        const catwayNumber = Number(req.body.catwayNumber);
+        
+        // Vérification de l'état du catway lors de la modification
+        if (!(await isAvailable(catwayNumber))) {
+            return res.redirect(`/reservations/edit/${req.params.idReservation}?error=catway_unavailable`);
+        }
+
+        await Reservation.findByIdAndUpdate(req.params.idReservation, req.body);
+        res.redirect('/reservations');
+    } catch (err) {
+        res.status(500).send("Erreur de mise à jour");
     }
-
-    // Vérification de l'état du catway
-    const state = catway.catwayState.toLowerCase();
-    if (state.includes('réparation') || state.includes('indisponible')) {
-        return res.status(400).json({ message: "Erreur : Ce catway est en réparation ou indisponible et ne peut être mis à jour." });
-    }
-
-    const { startDate, endDate } = req.body;
-    const newStart = new Date(startDate);
-    const newEnd = new Date(endDate);
-
-    // 2. Vérifier les chevauchements avec d'AUTRES réservations
-    const overlapping = await Reservation.find({
-        catwayNumber: req.params.id,
-        _id: { $ne: req.params.idReservation }, 
-        startDate: { $lt: newEnd },
-        endDate: { $gt: newStart }
-    });
-
-    if (overlapping.length > 0) {
-        return res.status(400).json({ message: "Erreur : Ce catway sera déjà occupé sur ces nouvelles dates." });
-    }
-
-    // 3. Procéder à la mise à jour
-    const updated = await Reservation.findOneAndUpdate(
-        { _id: req.params.idReservation, catwayNumber: req.params.id }, 
-        req.body, 
-        { new: true }
-    );
-    
-    updated ? res.status(200).json(updated) : res.status(404).json({ message: "Réservation non trouvée" });
 };
 
+/** @function getAll - Récupère toutes les réservations. */
+exports.getAll = async (req, res) => {
+    const reservations = await Reservation.find();
+    const catways = await Catway.find();
+    res.render('reservations', { reservations, catways, error: req.query.error });
+};
 
+/** @function getById - Récupère une réservation par son ID. */
+exports.getById = async (req, res) => {
+    const reservation = await Reservation.findById(req.params.idReservation);
+    res.render('reservation-details', { reservation });
+};
+
+/** @function delete - Supprime une réservation. */
 exports.delete = async (req, res) => {
-    await Reservation.findOneAndDelete({ _id: req.params.idReservation, catwayNumber: req.params.id });
-    res.status(200).json({ message: "Réservation supprimée" });
+    await Reservation.findByIdAndDelete(req.params.idReservation);
+    res.redirect('/reservations');
 };

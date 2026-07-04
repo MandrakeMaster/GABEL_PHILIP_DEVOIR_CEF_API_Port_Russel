@@ -1,6 +1,14 @@
+/**
+ * @file middlewares/auth.js
+ * @description Middleware de vérification et de renouvellement des jetons JWT[cite: 16].
+ */
 const jwt = require('jsonwebtoken');
 const SECRET_KEY = process.env.SECRET_KEY;
 
+/**
+ * @function checkJWT
+ * @description Vérifie la validité du token JWT dans les headers et en génère un nouveau[cite: 16].
+ */
 exports.checkJWT = async (req, res, next) => {
     let token = req.headers['x-access-token'] || req.headers['authorization'];
     

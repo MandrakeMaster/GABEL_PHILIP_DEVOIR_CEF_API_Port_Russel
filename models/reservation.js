@@ -1,3 +1,7 @@
+/**
+ * @file models/reservation.js
+ * @description Modèle de données pour une réservation[cite: 18].
+ */
 const mongoose = require('mongoose');
 
 const reservationSchema = mongoose.Schema({

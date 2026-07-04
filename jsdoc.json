@@ -1,6 +1,7 @@
 {
     "source": {
         "include": ["routes", "services", "models", "app.js"],
+        "exclude": ["views", "node_modules", "out"],
         "includePattern": ".js$",
         "excludePattern": "(node_modules|public|bin|middlewares/.*private.js$)"
     },

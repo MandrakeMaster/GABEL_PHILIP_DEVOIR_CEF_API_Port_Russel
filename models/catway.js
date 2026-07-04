@@ -1,3 +1,7 @@
+/**
+ * @file models/catway.js
+ * @description Modèle de données pour un Catway[cite: 17].
+ */
 const mongoose = require('mongoose');
 
 const catwaySchema = mongoose.Schema({

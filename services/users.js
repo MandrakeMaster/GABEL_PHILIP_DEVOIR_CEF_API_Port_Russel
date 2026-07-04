@@ -1,14 +1,13 @@
-const User   = require('../models/user');
+/**
+ * @file services/users.js
+ * @description Gestion des utilisateurs, authentification et CRUD[cite: 7].
+ */
+const User = require('../models/user');
 const bcrypt = require('bcrypt');
-const jwt    = require('jsonwebtoken');
-
+const jwt = require('jsonwebtoken');
 const SECRET_KEY = process.env.SECRET_KEY;
 
-/**
- * @function getAll
- * @description Récupère la liste de tous les utilisateurs.
- * @returns {Array} Liste des utilisateurs.
- */
+/** @function getAll - Liste tous les utilisateurs[cite: 7]. */
 exports.getAll = async (req, res) => {
     try {
         const users = await User.find();
@@ -18,14 +17,7 @@ exports.getAll = async (req, res) => {
     }
 };
 
-
-/**
- * @function add
- * @description Crée un nouvel utilisateur.
- * @param {string} req.body.username - Nom d'utilisateur.
- * @param {string} req.body.email - Email unique.
- * @param {string} req.body.password - Mot de passe (sera haché).
- */
+/** @function add - Crée un utilisateur[cite: 7]. */
 exports.add = async (req, res, next) => {
     try {
         const user = new User({
@@ -33,21 +25,15 @@ exports.add = async (req, res, next) => {
             email: req.body.email,
             password: req.body.password
         });
-
         await user.save();
         return res.status(201).json(user);
     } catch (error) {
-        // AFFICHE L'ERREUR DANS LA CONSOLE POUR VOIR CE QUI BLOQUE
         console.error("ERREUR CAPTURÉE :", error);
         res.status(501).json({ message: "Erreur lors de la création", detail: error.message });
     }
 };
 
-/**
- * @function getByEmail
- * @description Récupère les détails d'un utilisateur par son email.
- * @param {string} req.params.email - L'email de l'utilisateur.
- */
+/** @function getByEmail - Récupère un utilisateur par email[cite: 7]. */
 exports.getByEmail = async (req, res, next) => {
     try {
         const user = await User.findOne({ email: req.params.email });
@@ -58,11 +44,7 @@ exports.getByEmail = async (req, res, next) => {
     }
 };
 
-/**
- * @function update
- * @description Modifie un utilisateur existant.
- * @param {string} req.params.email - Email de l'utilisateur à modifier.
- */
+/** @function update - Modifie un utilisateur existant[cite: 7]. */
 exports.update = async (req, res, next) => {
     const email = req.params.email;
     const temp = ({
@@ -70,10 +52,8 @@ exports.update = async (req, res, next) => {
         email: req.body.email,
         password: req.body.password
     });
-
     try {
         let user = await User.findOne({ email: email});
-
         if (user) {
             Object.keys(temp).forEach((key) => {
                 if (!!temp[key]) {
@@ -89,14 +69,9 @@ exports.update = async (req, res, next) => {
     }
 };
 
-/**
- * @function delete
- * @description Supprime un utilisateur.
- * @param {string} req.params.email - Email de l'utilisateur à supprimer.
- */
+/** @function delete - Supprime un utilisateur[cite: 7]. */
 exports.delete = async (req, res, next) => {
     const email = req.params.email;
-
     try {
         await User.deleteOne({ email: email });
         return res.status(204).json('delete_ok');
@@ -105,37 +80,18 @@ exports.delete = async (req, res, next) => {
     }
 };
 
-
-/**
- * @function login
- * @description Authentifie un utilisateur et retourne un token JWT.
- * @param {string} req.body.email - Email de l'utilisateur.
- * @param {string} req.body.password - Mot de passe en clair.
- * @returns {string} Token JWT dans le header Authorization.
- */
+/** @function login - Authentification JWT[cite: 7]. */
 exports.login = async (req, res, next) => {
     const { email, password } = req.body;
-
     try {
         let user = await User.findOne({ email: email }, '-__v -createdAt -updatedAt');
-
         if (user) {
             bcrypt.compare(password, user.password, function(err, response) {
-                if (err) {
-                    throw new Error(err);
-                }
+                if (err) throw new Error(err);
                 if (response) {
                     delete user._doc.password;
-
                     const expireIn = 24 * 60 * 60;
-                    const token = jwt.sign({
-                        user: user
-                    },
-                    SECRET_KEY,
-                    {
-                        expiresIn: expireIn
-                    });
-
+                    const token = jwt.sign({ user: user }, SECRET_KEY, { expiresIn: expireIn });
                     res.header('Authorization', 'Bearer ' + token);
                     return res.status(200).json('authenticate_succeed');
                 }

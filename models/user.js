@@ -1,3 +1,7 @@
+/**
+ * @file models/user.js
+ * @description Modèle de données pour un utilisateur avec hachage de mot de passe[cite: 19].
+ */
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const bcrypt = require('bcrypt');
@@ -24,7 +28,7 @@ const User = new Schema({
         timestamps: true
 });
 
-//Hash le mot de passe quand il est modifié
+// Hash le mot de passe quand il est modifié[cite: 19]
 User.pre('save', function(next) {
     if (!this.isModified('password')) {
         return typeof next === 'function' ? next() : null;
@@ -32,7 +36,6 @@ User.pre('save', function(next) {
 
     try {
         this.password = bcrypt.hashSync(this.password, 10);
-        // Si next est une fonction, on l'appelle, sinon on termine simplement
         typeof next === 'function' ? next() : null;
     } catch (error) {
         typeof next === 'function' ? next(error) : null;

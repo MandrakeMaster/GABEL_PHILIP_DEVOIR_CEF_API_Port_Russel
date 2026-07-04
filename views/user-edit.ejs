@@ -15,7 +15,7 @@
             <h2>Modification de : <%= user.username %></h2>
 
             <form action="/users/update/<%= user._id %>" method="POST">
-                <input type="text" name="name" placeholder="Votre nom" value="<%= user.name %>" required>
+                <input type="text" name="username" placeholder="Votre nom" value="<%= user.username %>" required>
                 <input type="email" name="email" value="<%= user.email %>" required>
                 <input type="password" name="password" placeholder="Nouveau mot de passe (laisser vide pour garder l'ancien)">
                 

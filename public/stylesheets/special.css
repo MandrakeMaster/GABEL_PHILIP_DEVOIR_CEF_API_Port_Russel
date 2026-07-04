@@ -37,3 +37,13 @@ thead {
     background-color: #00274d;
     color: white;
 }
+
+/* --- Styles pour les messages d'erreur --- */
+.error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border: 1px solid #f5c6cb;
+}

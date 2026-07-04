@@ -12,10 +12,25 @@
     <main class="catway-container">
         <section class="add-section">
             <h3>Modification</h3>
-            <!-- Note l'action qui pointe vers /reservations/update/:id -->
+            
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="error-message">
+                    <% if (error === 'conflict') { %>
+                        Attention : Le catway est déjà pris sur ces dates !
+                    <% } else if (error === 'invalid_dates') { %>
+                        Dates invalides.
+                    <% } %>
+                </div>
+            <% } %>
+
             <form action="/reservations/update/<%= reservation._id %>" method="POST">
-                <input type="number" name="catwayNumber" value="<%= reservation.catwayNumber %>" required>
+                <label for="catwayNumber">N° Catway :</label>
+                <input type="number" name="catwayNumber" value="<%= reservation.catwayNumber %>" readonly>
+                
+                <label for="clientName">Client :</label>
                 <input type="text" name="clientName" value="<%= reservation.clientName %>" required>
+                
+                <label for="boatName">Bateau :</label>
                 <input type="text" name="boatName" value="<%= reservation.boatName %>" required>
                 
                 <label for="startDate">Date de début :</label>
