@@ -7,5 +7,9 @@ env
 # Fichiers générés par le système ou l'éditeur
 .DS_Store
 *.log
+
 #Fichier perso todolist etc
 todo list
+
+#Fichier out jsdoc
+out/
