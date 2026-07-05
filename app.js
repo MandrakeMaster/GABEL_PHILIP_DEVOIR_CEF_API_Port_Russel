@@ -6,6 +6,7 @@ const express       = require('express');
 const cookieParser  = require('cookie-parser');
 const logger        = require('morgan');
 const cors          = require('cors');
+const path          = require('path');
 
 const indexRouter   = require('./routes/index');
 const usersRouter   = require('./routes/users');
@@ -33,7 +34,7 @@ app.use(cookieParser());
 app.use(express.static('public'));
 
 /** Route de la documentation JSDoc[cite: 8]. */
-app.use('/api-docs', express.static('out'));
+app.use('/api-docs', express.static(path.join(__dirname, 'out')));
 
 /** Enregistrement des routeurs[cite: 8]. */
 app.use('/', indexRouter);                                     
