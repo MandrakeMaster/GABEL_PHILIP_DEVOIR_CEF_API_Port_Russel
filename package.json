@@ -18,8 +18,4 @@
     "mongoose": "^9.7.3",
     "morgan": "~1.9.1",
     "jsdoc": "^4.0.5"
-  },
-  "devDependencies": {
-    "jsdoc": "^4.0.5"
   }
-}
