@@ -34,7 +34,7 @@ app.use(cookieParser());
 app.use(express.static('public'));
 
 /** Route de la documentation JSDoc[cite: 8]. */
-app.use('/api-docs', express.static(path.join(__dirname, 'out')));
+app.use('/api-docs', express.static(path.join(__dirname, '../out')));
 
 /** Enregistrement des routeurs[cite: 8]. */
 app.use('/', indexRouter);                                     
