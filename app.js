@@ -37,8 +37,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser()); 
 app.use(express.static('public'));
 
-/** @description Route d'accès à la documentation technique générée via JSDoc. */
-app.use('/api-docs', express.static(path.join(__dirname, 'out')));
+/** Route de la documentation JSDoc[cite: 8]. */
+app.use('/api-docs', express.static('out'));
 
 /** @description Enregistrement des routeurs de l'application. */
 app.use('/', indexRouter);                                     
