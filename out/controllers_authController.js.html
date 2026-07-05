@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: middlewares/auth.js</title>
+    <title>JSDoc: Source: controllers/authController.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: middlewares/auth.js</h1>
+    <h1 class="page-title">Source: controllers/authController.js</h1>
 
     
 
@@ -26,53 +26,74 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @file middlewares/auth.js
- * @description Middleware de vérification des jetons JWT via headers ou cookies.
+            <pre class="prettyprint source linenums"><code>/** 
+ * @file controllers/authController.js 
+ * @description Contrôleur gérant la logique d'authentification et du tableau de bord.
  */
-const jwt = require('jsonwebtoken');
-const SECRET_KEY = process.env.SECRET_KEY;
+const authService = require('../services/authservice.js');
+const Reservation = require('../models/reservationModel');
 
-/**
- * @function checkJWT
- * @description Vérifie la validité du token JWT (headers ou cookies) et autorise l'accès.
+/** 
+ * @function login 
+ * @param {Object} req - Requête HTTP Express.
+ * @param {Object} res - Réponse HTTP Express.
+ * @description Vérifie les identifiants via le service et gère la session (cookie/redirection). 
  */
-exports.checkJWT = async (req, res, next) => {
-    // On récupère le token soit dans les headers, soit dans les cookies
-    let token = req.headers['x-access-token'] || req.headers['authorization'] || (req.cookies &amp;&amp; req.cookies.token);
-    
-    // Si le token est envoyé via Header Authorization (Bearer), on nettoie la chaîne
-    if (token &amp;&amp; token.startsWith('Bearer ')) {
-        token = token.slice(7, token.length);
+exports.login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const { token } = await authService.authenticate(email, password);
+        
+        res.cookie('token', token, { httpOnly: true });
+        res.redirect('/dashboard');
+    } catch (error) {
+        res.render('index', { title: 'Port de Plaisance', error: error.message });
     }
+};
 
-    if (token) {
-        jwt.verify(token, SECRET_KEY, (err, decoded) => {
-            if (err) {
-                // Si le token est invalide, on renvoie une erreur (ou redirection pour les vues web)
-                return res.status(401).json('token_not_valid');
-            } else {
-                // On injecte les infos décodées dans la requête pour y accéder plus tard
-                req.decoded = decoded;
+/** 
+ * @function getDashboardData
+ * @param {Object} req - Requête HTTP.
+ * @param {Object} res - Réponse HTTP.
+ * @description Route API pour récupérer les réservations en format JSON pour le dashboard asynchrone.
+ */
+exports.getDashboardData = async (req, res) => {
+    try {
+        const reservations = await Reservation.find();
+        res.json(reservations);
+    } catch (error) {
+        res.status(500).json({ error: "Erreur lors du chargement des données" });
+    }
+};
 
-                // Optionnel : Régénération d'un nouveau token si besoin
-                const expiresIn = 24 * 60 * 60;
-                const newToken = jwt.sign({
-                    user: decoded.user
-                },
-                SECRET_KEY,
-                {
-                    expiresIn: expiresIn
-                });
-
-                res.header('Authorization', 'Bearer ' + newToken);
-                next();
-            }
+/** 
+ * @function getDashboard 
+ * @param {Object} req - Requête HTTP.
+ * @param {Object} res - Réponse HTTP.
+ * @description Affiche la vue du tableau de bord sécurisé.
+ */
+exports.getDashboard = (req, res) => {
+    try {
+        const user = req.decoded.user; 
+        res.render('dashboard', { 
+            userName: user.username || 'Utilisateur',
+            email: user.email,
+            date: new Date().toLocaleDateString('fr-FR')
         });
-    } else {
-        // Pas de token présent
-        return res.status(401).json('token_required');
+    } catch (error) {
+        res.redirect('/');
     }
+};
+
+/** 
+ * @function logout 
+ * @param {Object} req - Requête HTTP.
+ * @param {Object} res - Réponse HTTP.
+ * @description Déconnecte l'utilisateur et supprime le cookie d'authentification. 
+ */
+exports.logout = (req, res) => {
+    res.clearCookie('token');
+    res.redirect('/');
 };</code></pre>
         </article>
     </section>

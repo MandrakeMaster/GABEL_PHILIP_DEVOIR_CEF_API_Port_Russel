@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Tableau de bord - Port de Russel</title>
     <link rel="stylesheet" href="/stylesheets/style.css">
-    <link rel="stylesheet" href="/stylesheets/special.css">
 </head>
 <body>
     <header>
@@ -22,7 +21,7 @@
 
         <section class="reservations-section">
             <h2>Réservations en cours</h2>
-            <table>
+            <table id="res-table">
                 <thead>
                     <tr>
                         <th>N° Catway</th>
@@ -32,20 +31,32 @@
                         <th>Fin</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <% reservations.forEach(function(res) { %>
-                        <tr>
-                            <td><%= res.catwayNumber %></td>
-                            <td><%= res.clientName %></td>
-                            <td><%= res.boatName %></td>
-                            <td><%= new Date(res.startDate).toLocaleDateString('fr-FR') %></td>
-                            <td><%= new Date(res.endDate).toLocaleDateString('fr-FR') %></td>
-                        </tr>
-                    <% }); %>
+                <tbody id="res-body">
+                    <!-- Les données sont chargées via fetch -->
                 </tbody>
             </table>
         </section>
     </main>
+
+    <script>
+        fetch('/api/dashboard-data')
+            .then(response => response.json())
+            .then(data => {
+                const body = document.getElementById('res-body');
+                body.innerHTML = ''; // Nettoie le contenu initial
+                data.forEach(res => {
+                    const row = `<tr>
+                        <td>${res.catwayNumber}</td>
+                        <td>${res.clientName}</td>
+                        <td>${res.boatName}</td>
+                        <td>${new Date(res.startDate).toLocaleDateString()}</td>
+                        <td>${new Date(res.endDate).toLocaleDateString()}</td>
+                    </tr>`;
+                    body.innerHTML += row;
+                });
+            })
+            .catch(err => console.error('Erreur lors du chargement des données:', err));
+    </script>
 
     <footer>
         <p>© 2026 - Port de Russel</p>

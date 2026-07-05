@@ -4,38 +4,30 @@
     <meta charset="UTF-8">
     <title>Gestion des Utilisateurs</title>
     <link rel="stylesheet" href="/stylesheets/style.css">
-    <link rel="stylesheet" href="/stylesheets/special.css">
 </head>
 <body>
     <header><h1>Gestion des Utilisateurs</h1></header>
     <main class="catway-container">
+        <% if (typeof error !== 'undefined' && error) { %><div class="error-message"><%= error %></div><% } %>
         <section class="add-section">
             <h3>Ajouter un utilisateur</h3>
-            <!-- Correction ici : name="username" -->
             <form action="/users/add" method="POST">
                 <input type="text" name="username" placeholder="Nom d'utilisateur" required>
                 <input type="email" name="email" placeholder="Email" required>
                 <input type="password" name="password" placeholder="Mot de passe" required>
-                <button type="submit">Créer</button>
+                <button type="submit" class="btn btn-ok">Créer</button>
             </form>
         </section>
-
         <table>
-            <thead>
-                <tr>
-                    <th>Nom</th>
-                    <th>Email</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Nom</th><th>Email</th><th>Actions</th></tr></thead>
             <tbody>
                 <% users.forEach(function(u) { %>
                     <tr>
                         <td><%= u.username %></td>
                         <td><%= u.email %></td>
                         <td>
-                            <a href="/users/edit/<%= u._id %>">Modifier</a>
-                            <a href="/users/delete/<%= u._id %>" onclick="return confirm('Confirmer ?')">Supprimer</a>
+                            <a href="/users/edit/<%= u._id %>" class="btn btn-ok">Modifier</a> 
+                            <a href="/users/delete/<%= u._id %>" onclick="return confirm('Confirmer ?')" class="btn btn-cancel">Supprimer</a>
                         </td>
                     </tr>
                 <% }); %>

@@ -13,6 +13,13 @@
 
     <main>
         <h3>Connexion</h3>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="error-message">
+                <%= error %>
+            </div>
+        <% } %>
+
         <form action="/login" method="POST">
             <div>
                 <label>Email:</label>

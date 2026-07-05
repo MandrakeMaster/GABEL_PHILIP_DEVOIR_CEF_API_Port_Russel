@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: middlewares/auth.js</title>
+    <title>JSDoc: Source: controllers/reservationController.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: middlewares/auth.js</h1>
+    <h1 class="page-title">Source: controllers/reservationController.js</h1>
 
     
 
@@ -26,52 +26,87 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @file middlewares/auth.js
- * @description Middleware de vérification des jetons JWT via headers ou cookies.
+            <pre class="prettyprint source linenums"><code>/** 
+ * @file controllers/reservationController.js 
+ * @description Contrôleur gérant les requêtes HTTP pour les Réservations.
  */
-const jwt = require('jsonwebtoken');
-const SECRET_KEY = process.env.SECRET_KEY;
+const service = require('../services/reservationsService');
+const catwaysService = require('../services/catwaysService');
 
-/**
- * @function checkJWT
- * @description Vérifie la validité du token JWT (headers ou cookies) et autorise l'accès.
- */
-exports.checkJWT = async (req, res, next) => {
-    // On récupère le token soit dans les headers, soit dans les cookies
-    let token = req.headers['x-access-token'] || req.headers['authorization'] || (req.cookies &amp;&amp; req.cookies.token);
-    
-    // Si le token est envoyé via Header Authorization (Bearer), on nettoie la chaîne
-    if (token &amp;&amp; token.startsWith('Bearer ')) {
-        token = token.slice(7, token.length);
-    }
-
-    if (token) {
-        jwt.verify(token, SECRET_KEY, (err, decoded) => {
-            if (err) {
-                // Si le token est invalide, on renvoie une erreur (ou redirection pour les vues web)
-                return res.status(401).json('token_not_valid');
-            } else {
-                // On injecte les infos décodées dans la requête pour y accéder plus tard
-                req.decoded = decoded;
-
-                // Optionnel : Régénération d'un nouveau token si besoin
-                const expiresIn = 24 * 60 * 60;
-                const newToken = jwt.sign({
-                    user: decoded.user
-                },
-                SECRET_KEY,
-                {
-                    expiresIn: expiresIn
-                });
-
-                res.header('Authorization', 'Bearer ' + newToken);
-                next();
-            }
+/** @function getAll - Liste toutes les réservations et les catways associés. */
+exports.getAll = async (req, res) => {
+    try {
+        const reservations = await service.findAll();
+        const catways = await catwaysService.findAll();
+        
+        res.render('reservations', { 
+            reservations: reservations, 
+            catways: catways, 
+            error: req.query.error 
         });
-    } else {
-        // Pas de token présent
-        return res.status(401).json('token_required');
+    } catch (error) {
+        res.status(500).send("Erreur lors de la récupération des données.");
+    }
+};
+
+/** @function add - Valide la disponibilité et les dates, puis ajoute une réservation. */
+exports.add = async (req, res) => {
+    try {
+        if (!(await service.isAvailable(req.body.catwayNumber))) {
+            return res.redirect('/reservations?error=Catway indisponible ou en réparation');
+        }
+        if (await service.hasConflict(req.body.catwayNumber, req.body.startDate, req.body.endDate)) {
+            return res.redirect('/reservations?error=Catway déjà réservé à ces dates');
+        }
+        await service.add(req.body);
+        res.redirect('/reservations');
+    } catch (error) {
+        res.status(500).send("Erreur lors de la création de la réservation.");
+    }
+};
+
+/** @function getEditForm - Affiche le formulaire de modification avec les réservations liées au catway. */
+exports.getEditForm = async (req, res) => {
+    try {
+        const reservation = await service.findById(req.params.id);
+        if (!reservation) return res.status(404).send("Non trouvé.");
+        
+        const relatedReservations = await service.findAll(); 
+        const filteredRelated = relatedReservations.filter(r => r.catwayNumber == reservation.catwayNumber);
+
+        res.render('reservation-edit', { 
+            reservation, 
+            relatedReservations: filteredRelated, 
+            error: req.query.error 
+        });
+    } catch (error) {
+        res.status(500).send("Erreur lors de l'accès à la modification.");
+    }
+};
+
+/** @function update - Vérifie les conflits et met à jour une réservation existante. */
+exports.update = async (req, res) => {
+    try {
+        if (!(await service.isAvailable(req.body.catwayNumber))) {
+            return res.redirect(`/reservations/edit/${req.params.id}?error=Catway indisponible ou en réparation`);
+        }
+        if (await service.hasConflict(req.body.catwayNumber, req.body.startDate, req.body.endDate, req.params.id)) {
+            return res.redirect(`/reservations/edit/${req.params.id}?error=Catway déjà réservé à ces dates`);
+        }
+        await service.update(req.params.id, req.body);
+        res.redirect('/reservations');
+    } catch (error) {
+        res.status(500).send("Erreur lors de la mise à jour.");
+    }
+};
+
+/** @function delete - Supprime une réservation. */
+exports.delete = async (req, res) => {
+    try {
+        await service.delete(req.params.id);
+        res.redirect('/reservations');
+    } catch (error) {
+        res.status(500).send("Erreur lors de la suppression.");
     }
 };</code></pre>
         </article>

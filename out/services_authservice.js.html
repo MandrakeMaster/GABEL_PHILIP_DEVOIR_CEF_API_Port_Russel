@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: middlewares/auth.js</title>
+    <title>JSDoc: Source: services/authservice.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: middlewares/auth.js</h1>
+    <h1 class="page-title">Source: services/authservice.js</h1>
 
     
 
@@ -26,53 +26,31 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @file middlewares/auth.js
- * @description Middleware de vérification des jetons JWT via headers ou cookies.
+            <pre class="prettyprint source linenums"><code>/** 
+ * @file services/authService.js 
+ * @description Logique métier pour l'authentification des utilisateurs.
  */
+const User = require('../models/userModel');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const SECRET_KEY = process.env.SECRET_KEY;
 
-/**
- * @function checkJWT
- * @description Vérifie la validité du token JWT (headers ou cookies) et autorise l'accès.
+/** 
+ * @function authenticate
+ * @param {string} email - Email de l'utilisateur.
+ * @param {string} password - Mot de passe en clair.
+ * @returns {Object} - Objet contenant l'utilisateur et le token JWT.
+ * @throws {Error} - Si l'utilisateur n'existe pas ou si le mot de passe est incorrect.
  */
-exports.checkJWT = async (req, res, next) => {
-    // On récupère le token soit dans les headers, soit dans les cookies
-    let token = req.headers['x-access-token'] || req.headers['authorization'] || (req.cookies &amp;&amp; req.cookies.token);
+exports.authenticate = async (email, password) => {
+    const user = await User.findOne({ email });
+    if (!user) throw new Error('Utilisateur non trouvé');
     
-    // Si le token est envoyé via Header Authorization (Bearer), on nettoie la chaîne
-    if (token &amp;&amp; token.startsWith('Bearer ')) {
-        token = token.slice(7, token.length);
-    }
-
-    if (token) {
-        jwt.verify(token, SECRET_KEY, (err, decoded) => {
-            if (err) {
-                // Si le token est invalide, on renvoie une erreur (ou redirection pour les vues web)
-                return res.status(401).json('token_not_valid');
-            } else {
-                // On injecte les infos décodées dans la requête pour y accéder plus tard
-                req.decoded = decoded;
-
-                // Optionnel : Régénération d'un nouveau token si besoin
-                const expiresIn = 24 * 60 * 60;
-                const newToken = jwt.sign({
-                    user: decoded.user
-                },
-                SECRET_KEY,
-                {
-                    expiresIn: expiresIn
-                });
-
-                res.header('Authorization', 'Bearer ' + newToken);
-                next();
-            }
-        });
-    } else {
-        // Pas de token présent
-        return res.status(401).json('token_required');
-    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) throw new Error('Mot de passe incorrect');
+    
+    const token = jwt.sign({ user }, SECRET_KEY, { expiresIn: '24h' });
+    return { user, token };
 };</code></pre>
         </article>
     </section>

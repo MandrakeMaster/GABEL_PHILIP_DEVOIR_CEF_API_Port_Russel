@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: middlewares/auth.js</title>
+    <title>JSDoc: Source: models/userModel.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: middlewares/auth.js</h1>
+    <h1 class="page-title">Source: models/userModel.js</h1>
 
     
 
@@ -27,53 +27,52 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * @file middlewares/auth.js
- * @description Middleware de vérification des jetons JWT via headers ou cookies.
+ * @file models/user.js
+ * @description Modèle de données pour un utilisateur avec hachage de mot de passe[cite: 19].
  */
-const jwt = require('jsonwebtoken');
-const SECRET_KEY = process.env.SECRET_KEY;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const bcrypt = require('bcrypt');
 
-/**
- * @function checkJWT
- * @description Vérifie la validité du token JWT (headers ou cookies) et autorise l'accès.
- */
-exports.checkJWT = async (req, res, next) => {
-    // On récupère le token soit dans les headers, soit dans les cookies
-    let token = req.headers['x-access-token'] || req.headers['authorization'] || (req.cookies &amp;&amp; req.cookies.token);
-    
-    // Si le token est envoyé via Header Authorization (Bearer), on nettoie la chaîne
-    if (token &amp;&amp; token.startsWith('Bearer ')) {
-        token = token.slice(7, token.length);
+const User = new Schema({
+    username: {
+        type    : String,
+        trim    : true,
+        required: [true, 'Le nom est requis']
+    },
+    email: {
+        type     : String,
+        trim     : true,
+        required : [true, 'L\'email est requis'],
+        unique   : true,
+        lowercase: true
+    },
+    password: {
+        type     : String,
+        required : [true, 'Le mot de passe est requis'],
+        minlength: [8, 'Le mot de passe doit faire au moins 8 caractères'] 
+    }
+    }, {
+        timestamps: true
+});
+
+// Hash le mot de passe quand il est modifié[cite: 19]
+User.pre('save', function(next) {
+    if (!this.isModified('password')) {
+        return typeof next === 'function' ? next() : null;
     }
 
-    if (token) {
-        jwt.verify(token, SECRET_KEY, (err, decoded) => {
-            if (err) {
-                // Si le token est invalide, on renvoie une erreur (ou redirection pour les vues web)
-                return res.status(401).json('token_not_valid');
-            } else {
-                // On injecte les infos décodées dans la requête pour y accéder plus tard
-                req.decoded = decoded;
-
-                // Optionnel : Régénération d'un nouveau token si besoin
-                const expiresIn = 24 * 60 * 60;
-                const newToken = jwt.sign({
-                    user: decoded.user
-                },
-                SECRET_KEY,
-                {
-                    expiresIn: expiresIn
-                });
-
-                res.header('Authorization', 'Bearer ' + newToken);
-                next();
-            }
-        });
-    } else {
-        // Pas de token présent
-        return res.status(401).json('token_required');
+    try {
+        this.password = bcrypt.hashSync(this.password, 10);
+        typeof next === 'function' ? next() : null;
+    } catch (error) {
+        typeof next === 'function' ? next(error) : null;
     }
-};</code></pre>
+});
+
+
+module.exports = mongoose.model('User', User);
+</code></pre>
         </article>
     </section>
 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: middlewares/auth.js</title>
+    <title>JSDoc: Source: controllers/userController.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: middlewares/auth.js</h1>
+    <h1 class="page-title">Source: controllers/userController.js</h1>
 
     
 
@@ -26,53 +26,45 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>/**
- * @file middlewares/auth.js
- * @description Middleware de vérification des jetons JWT via headers ou cookies.
- */
-const jwt = require('jsonwebtoken');
-const SECRET_KEY = process.env.SECRET_KEY;
+            <pre class="prettyprint source linenums"><code>/** @file controllers/userController.js */
+const service = require('../services/usersService');
 
-/**
- * @function checkJWT
- * @description Vérifie la validité du token JWT (headers ou cookies) et autorise l'accès.
- */
-exports.checkJWT = async (req, res, next) => {
-    // On récupère le token soit dans les headers, soit dans les cookies
-    let token = req.headers['x-access-token'] || req.headers['authorization'] || (req.cookies &amp;&amp; req.cookies.token);
-    
-    // Si le token est envoyé via Header Authorization (Bearer), on nettoie la chaîne
-    if (token &amp;&amp; token.startsWith('Bearer ')) {
-        token = token.slice(7, token.length);
+/** @function getAll - Récupère tous les utilisateurs et affiche la vue de gestion. */
+exports.getAll = async (req, res) => {
+    try { const users = await service.findAll(); res.render('users', { users, error: null }); }
+    catch (e) { res.status(500).send("Erreur"); }
+};
+
+/** @function add - Valide la longueur du mot de passe et ajoute un utilisateur. */
+exports.add = async (req, res) => {
+    try {
+        if (req.body.password.length &lt; 8) {
+            const users = await service.findAll();
+            return res.render('users', { users, error: "Mot de passe court." });
+        }
+        await service.add(req.body); res.redirect('/users');
+    } catch (e) {
+        const users = await service.findAll();
+        res.render('users', { users, error: "Email déjà utilisé." });
     }
+};
 
-    if (token) {
-        jwt.verify(token, SECRET_KEY, (err, decoded) => {
-            if (err) {
-                // Si le token est invalide, on renvoie une erreur (ou redirection pour les vues web)
-                return res.status(401).json('token_not_valid');
-            } else {
-                // On injecte les infos décodées dans la requête pour y accéder plus tard
-                req.decoded = decoded;
+/** @function editView - Affiche la vue de modification d'un utilisateur spécifique. */
+exports.editView = async (req, res) => {
+    try { const user = await service.findById(req.params.id); res.render('user-edit', { user, error: null }); }
+    catch (e) { res.status(500).send("Erreur"); }
+};
 
-                // Optionnel : Régénération d'un nouveau token si besoin
-                const expiresIn = 24 * 60 * 60;
-                const newToken = jwt.sign({
-                    user: decoded.user
-                },
-                SECRET_KEY,
-                {
-                    expiresIn: expiresIn
-                });
+/** @function update - Met à jour les informations d'un utilisateur. */
+exports.update = async (req, res) => {
+    try { await service.update(req.params.id, req.body); res.redirect('/users'); }
+    catch (e) { res.status(500).send("Erreur"); }
+};
 
-                res.header('Authorization', 'Bearer ' + newToken);
-                next();
-            }
-        });
-    } else {
-        // Pas de token présent
-        return res.status(401).json('token_required');
-    }
+/** @function delete - Supprime un utilisateur. */
+exports.delete = async (req, res) => {
+    try { await service.delete(req.params.id); res.redirect('/users'); }
+    catch (e) { res.status(500).send("Erreur"); }
 };</code></pre>
         </article>
     </section>

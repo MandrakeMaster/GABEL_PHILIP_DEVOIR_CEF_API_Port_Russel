@@ -4,27 +4,24 @@
     <meta charset="UTF-8">
     <title>Modifier Utilisateur</title>
     <link rel="stylesheet" href="/stylesheets/style.css">
-    <link rel="stylesheet" href="/stylesheets/special.css">
 </head>
 <body>
     <header><h1>Modifier Utilisateur</h1></header>
-
     <main class="catway-container">
-        <!-- Ajout du titre dynamique -->
         <section class="add-section">
             <h2>Modification de : <%= user.username %></h2>
-
+            <% if (typeof error !== 'undefined' && error) { %><div class="error-message"><%= error %></div><% } %>
             <form action="/users/update/<%= user._id %>" method="POST">
-                <input type="text" name="username" placeholder="Votre nom" value="<%= user.username %>" required>
+                <input type="text" name="username" value="<%= user.username %>" required>
                 <input type="email" name="email" value="<%= user.email %>" required>
-                <input type="password" name="password" placeholder="Nouveau mot de passe (laisser vide pour garder l'ancien)">
-                
-                <button type="submit">Enregistrer</button>
-                <a href="/users">Annuler</a>
+                <input type="password" name="password" placeholder="Nouveau mot de passe">
+                <div style="margin-top: 10px;">
+                    <button type="submit" class="btn btn-ok">Enregistrer</button>
+                    <a href="/users" class="btn btn-cancel">Annuler</a>
+                </div>
             </form>
         </section>
     </main>
-
     <footer><a href="/dashboard">← Retour au Dashboard</a></footer>
 </body>
 </html>

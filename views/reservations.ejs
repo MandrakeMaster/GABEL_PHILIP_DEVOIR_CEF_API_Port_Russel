@@ -4,24 +4,13 @@
     <meta charset="UTF-8">
     <title>Gestion des Réservations</title>
     <link rel="stylesheet" href="/stylesheets/style.css">
-    <link rel="stylesheet" href="/stylesheets/special.css">
 </head>
 <body>
     <header><h1>Gestion des Réservations</h1></header>
 
     <main class="catway-container">
-        <% if (typeof error !== 'undefined' && error) { %>
-            <div class="error-message">
-                <% if (error === 'conflict') { %>
-                    Attention : Ce catway est déjà réservé sur ces dates.
-                <% } else if (error === 'invalid_dates') { %>
-                    Attention : La date de début doit être antérieure à la date de fin.
-                <% } else if (error === 'catway_unavailable') { %>
-                    Attention : Ce catway est actuellement en réparation ou indisponible.
-                <% } else { %>
-                    Une erreur est survenue lors de la réservation.
-                <% } %>
-            </div>
+        <% if (locals.error && error) { %>
+            <div class="error-message"><%= error %></div>
         <% } %>
 
         <section class="add-section">
@@ -30,9 +19,9 @@
                 <label for="catwayNumber">N° Catway :</label>
                 <select name="catwayNumber" id="catwayNumber" required>
                     <option value="">-- Choisir un Catway --</option>
-                    <% catways.forEach(function(c) { %>
+                    <% if (locals.catways) { catways.forEach(function(c) { %>
                         <option value="<%= c.catwayNumber %>">Catway n°<%= c.catwayNumber %> (<%= c.catwayState %>)</option>
-                    <% }); %>
+                    <% }); } %>
                 </select>
 
                 <input type="text" name="clientName" placeholder="Nom Client" required>
@@ -41,7 +30,7 @@
                 <input type="date" id="startDate" name="startDate" required>
                 <label for="endDate">Date de fin :</label>
                 <input type="date" id="endDate" name="endDate" required>
-                <button type="submit">Réserver</button>
+                <button type="submit" class="btn btn-ok">Réserver</button>
             </form>
         </section>
 
@@ -67,8 +56,9 @@
                             <%= res.endDate ? res.endDate.toLocaleDateString() : 'N/A' %>
                         </td>
                         <td>
-                            <a href="/reservations/edit/<%= res._id %>">Modifier</a>
+                            <a href="/reservations/edit/<%= res._id %>" class="btn btn-ok">Modifier</a>
                             <a href="/reservations/delete/<%= res._id %>" 
+                               class="btn btn-cancel"
                                onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?');">
                                Supprimer
                             </a>
